@@ -3,9 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DialogsModule } from './dialogs/dialogs.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
-  imports: [DialogsModule, ConfigModule.forRoot()],
+  imports: [ConfigModule.forRoot(), DialogsModule, QueueModule],
   controllers: [AppController],
   providers: [AppService],
 })
