@@ -8,8 +8,8 @@ export class QueueService {
 
   async addToQueue(
     chatId: number | null,
-    depth: 'day' | 'week' | 'all',
+    depth: 'full' | 'sync' | number,
   ): Promise<void> {
-    await this.queue.add('chatHistoryQueue', { chatId: chatId, depth });
+    await this.queue.add('chatHistory', { chatId: chatId, depth });
   }
 }
