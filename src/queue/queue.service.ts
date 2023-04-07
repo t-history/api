@@ -7,9 +7,9 @@ export class QueueService {
   constructor(@InjectQueue('chatHistoryQueue') private queue: Queue) {}
 
   async addToQueue(
-    dialogId: number | null,
+    chatId: number | null,
     depth: 'day' | 'week' | 'all',
   ): Promise<void> {
-    await this.queue.add('chatHistoryQueue', { chatId: dialogId, depth });
+    await this.queue.add('chatHistoryQueue', { chatId: chatId, depth });
   }
 }

@@ -1,7 +1,7 @@
 import { MessageDto } from './message.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
-export class DialogDto {
+export class ChatDto {
   @ApiProperty()
   id: number;
   @ApiProperty()

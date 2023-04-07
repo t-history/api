@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { DialogDto } from './dialog.dto';
+import { ChatDto } from './chat.dto';
 import { MessageDto } from './message.dto';
 
 import Datastore from '@seald-io/nedb';
 import path from 'path';
 
 @Injectable()
-export class DialogsService {
-  async getDialogs(): Promise<DialogDto[]> {
+export class ChatsService {
+  async getChats(): Promise<ChatDto[]> {
     const databasePath = path.join(process.env.DATABASE_PATH, 'chats.db');
     const db = new Datastore({
       filename: databasePath,
@@ -36,7 +36,7 @@ export class DialogsService {
     return transformedDocs;
   }
 
-  async getDialogById(dialogId: number): Promise<DialogDto> | undefined {
+  async getChatById(chatId: number): Promise<ChatDto> | undefined {
     const databasePath = path.join(process.env.DATABASE_PATH, 'chats.db');
     const db = new Datastore({
       filename: databasePath,
@@ -44,7 +44,7 @@ export class DialogsService {
     });
 
     const doc = await db.findOneAsync(
-      { _id: Number(dialogId) },
+      { _id: Number(chatId) },
       { id: 1, title: 1, last_message: 1 },
     );
 
@@ -66,13 +66,11 @@ export class DialogsService {
     };
   }
 
-  async getMessagesByDialogId(
-    dialogId: number,
-  ): Promise<MessageDto[]> | undefined {
+  async getMessagesByChatId(chatId: number): Promise<MessageDto[]> | undefined {
     const databasePath = path.join(
       process.env.DATABASE_PATH,
       'chats',
-      `${dialogId}.db`,
+      `${chatId}.db`,
     );
     const db = new Datastore({
       filename: databasePath,

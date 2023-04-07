@@ -19,16 +19,16 @@ export class QueueController {
       },
     },
   })
-  @ApiOperation({ summary: 'Add all dialogs to the export queue' })
+  @ApiOperation({ summary: 'Add all chats to the export queue' })
   @ApiResponse({
     status: 200,
-    description: 'All dialogs have been added to the export queue',
+    description: 'All chats have been added to the export queue',
   })
   addToQueueAll(@Body('depth') depth: 'day' | 'week' | 'all'): void {
     this.queueService.addToQueue(null, depth);
   }
 
-  @Post('dialog/:dialogId')
+  @Post('chat/:chatId')
   @ApiBody({
     schema: {
       type: 'object',
@@ -40,16 +40,16 @@ export class QueueController {
       },
     },
   })
-  @ApiOperation({ summary: 'Add a specific dialog to the export queue' })
+  @ApiOperation({ summary: 'Add a specific chat to the export queue' })
   @ApiResponse({
     status: 200,
-    description: 'The specified dialog has been added to the export queue',
+    description: 'The specified chat has been added to the export queue',
   })
-  @ApiResponse({ status: 404, description: 'Dialog not found' })
-  addToQueueDialog(
-    @Param('dialogId') dialogId: number,
+  @ApiResponse({ status: 404, description: 'Chat not found' })
+  addToQueueChat(
+    @Param('chatId') chatId: number,
     @Body('depth') depth: 'day' | 'week' | 'all',
   ): void {
-    this.queueService.addToQueue(dialogId, depth);
+    this.queueService.addToQueue(chatId, depth);
   }
 }
