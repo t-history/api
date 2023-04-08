@@ -10,6 +10,6 @@ export class QueueService {
     chatId: number | null,
     depth: 'full' | 'sync' | number,
   ): Promise<void> {
-    await this.queue.add('chatHistory', { chatId: chatId, depth });
+    await this.queue.add('getChat', { chatId, depth });
   }
 }

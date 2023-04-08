@@ -2,11 +2,10 @@ import {
   Controller,
   Post,
   Param,
-  Body,
   NotFoundException,
   ParseIntPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { QueueService } from './queue.service';
 
 @ApiTags('queue')
