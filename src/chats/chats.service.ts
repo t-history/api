@@ -44,7 +44,7 @@ export class ChatsService {
     });
 
     const doc = await db.findOneAsync(
-      { _id: Number(chatId) },
+      { _id: chatId },
       { id: 1, title: 1, last_message: 1 },
     );
 
@@ -66,7 +66,11 @@ export class ChatsService {
     };
   }
 
-  async getMessagesByChatId(chatId: number): Promise<MessageDto[]> | undefined {
+  async getMessagesByChatId(
+    chatId: number,
+    fromMessageId: number,
+    limit: number,
+  ): Promise<MessageDto[]> | undefined {
     const databasePath = path.join(
       process.env.DATABASE_PATH,
       'chats',
@@ -77,14 +81,17 @@ export class ChatsService {
       autoload: true,
     });
 
+    const query = fromMessageId === 0 ? {} : { id: { $lte: fromMessageId } };
+
     const docs = await db
-      .findAsync({})
+      .findAsync(query)
       .projection({
         id: 1,
         'sender_id.user_id': 1,
         'content.text.text': 1,
         date: 1,
       })
+      .limit(limit)
       .sort({ date: -1 });
 
     const transformedDocs = docs.map((doc) => {

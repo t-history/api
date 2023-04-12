@@ -67,11 +67,11 @@ export class QueueController {
     this.queueService.addToQueue(chatId, 'sync');
   }
 
-  // load only messages from the depth in unixtime
+  // load only messages from the depth in seconds
   @Post('chat/:chatId/:depth')
   @ApiOperation({
     summary:
-      'Add a task to queue for sync the specified chat to the desired depth',
+      'Add a task to queue for sync the specified chat to the desired depth in seconds',
   })
   @ApiResponse({
     status: 201,
