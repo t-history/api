@@ -81,7 +81,7 @@ export class ChatsService {
       autoload: true,
     });
 
-    const query = fromMessageId === 0 ? {} : { id: { $lte: fromMessageId } };
+    const query = fromMessageId === 0 ? {} : { id: { $lt: fromMessageId } };
 
     const docs = await db
       .findAsync(query)
@@ -94,16 +94,18 @@ export class ChatsService {
       .limit(limit)
       .sort({ date: -1 });
 
-    const transformedDocs = docs.map((doc) => {
-      const text = doc.content?.text?.text;
+    const transformedDocs = docs
+      .map((doc) => {
+        const text = doc.content?.text?.text;
 
-      return {
-        id: doc.id,
-        sender: doc.sender_id.user_id,
-        content: text,
-        unixtime: doc.date,
-      };
-    });
+        return {
+          id: doc.id,
+          sender: doc.sender_id.user_id,
+          content: text,
+          unixtime: doc.date,
+        };
+      })
+      .reverse();
 
     return transformedDocs;
   }
