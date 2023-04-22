@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Param,
   NotFoundException,
   ParseIntPipe,
@@ -86,5 +87,16 @@ export class QueueController {
       throw new NotFoundException('Chat not found');
     }
     this.queueService.addToQueue(chatId, depth);
+  }
+
+  @Get('length')
+  @ApiOperation({ summary: 'Get queue length' })
+  @ApiResponse({
+    status: 200,
+    description: 'Queue length successfully obtained',
+    type: Number,
+  })
+  getQueueLength(): any {
+    return this.queueService.getQueueLength();
   }
 }

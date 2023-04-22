@@ -12,4 +12,13 @@ export class QueueService {
   ): Promise<void> {
     await this.queue.add('getChat', { chatId, depth });
   }
+
+  async getQueueLength(): Promise<any> {
+    const queueLength = await this.queue.getJobCounts(
+      'wait',
+      'completed',
+      'failed',
+    );
+    return queueLength;
+  }
 }
