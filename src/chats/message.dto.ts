@@ -11,5 +11,8 @@ export class MessageDto {
   content: string;
 
   @ApiProperty()
+  type: string;
+
+  @ApiProperty()
   unixtime: number;
 }

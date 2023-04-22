@@ -16,7 +16,7 @@ import {
 import { ChatsService } from './chats.service';
 import { ChatDto } from './chat.dto';
 import { MessageDto } from './message.dto';
-import { FromMessageIdDTO, OffsetDTO, LimitDTO } from './dto';
+import { FromMessageIdDTO, LimitDTO } from './dto';
 
 @ApiTags('chats')
 @Controller('chats')

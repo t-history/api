@@ -3,9 +3,6 @@ import { ChatDto } from './chat.dto';
 import { MessageDto } from './message.dto';
 import { Db, MongoClient } from 'mongodb';
 
-// import Datastore from '@seald-io/nedb';
-import path from 'path';
-
 @Injectable()
 export class ChatsService {
   private db: Db;
@@ -80,6 +77,7 @@ export class ChatsService {
         id: 1,
         'sender_id.user_id': 1,
         'content.text.text': 1,
+        'content._': 1,
         date: 1,
       })
       .limit(limit)
@@ -95,6 +93,7 @@ export class ChatsService {
           id: doc.id,
           sender: doc.sender_id.user_id,
           content: text,
+          type: doc.content._,
           unixtime: doc.date,
         };
       })
