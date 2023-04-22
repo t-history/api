@@ -15,7 +15,7 @@ export class ChatsService {
   }
 
   async getChats(): Promise<ChatDto[]> {
-    const collection = await this.db.collection('chats');
+    const collection = this.db.collection('chats');
 
     const cursor = collection
       .find({})
@@ -27,7 +27,8 @@ export class ChatsService {
       const lastMessage = {
         id: doc.last_message?.id,
         sender: doc.last_message?.sender_id.user_id,
-        content: doc.last_message?.content?.text?.text,
+        content: doc.last_message?.content.text?.text,
+        type: doc.last_message?.content._,
         unixtime: doc.last_message?.date,
       };
 
@@ -42,34 +43,27 @@ export class ChatsService {
   }
 
   async getChatById(chatId: number): Promise<ChatDto> | undefined {
-    const databasePath = path.join(process.env.DATABASE_PATH, 'chats.db');
-    return;
-    // const db = new Datastore({
-    //   filename: databasePath,
-    //   autoload: true,
-    // });
+    const collection = this.db.collection('chats');
 
-    // const doc = await db.findOneAsync(
-    //   { _id: chatId },
-    //   { id: 1, title: 1, last_message: 1 },
-    // );
+    const doc = await collection.findOne({ id: chatId });
 
-    // if (!doc) {
-    //   return;
-    // }
+    if (!doc) {
+      return;
+    }
 
-    // const lastMessage = {
-    //   id: doc.last_message.id,
-    //   sender: doc.last_message.sender_id?.user_id,
-    //   content: doc.last_message?.content?.text?.text,
-    //   unixtime: doc.last_message?.date,
-    // };
+    const lastMessage = {
+      id: doc.last_message.id,
+      sender: doc.last_message.sender_id?.user_id,
+      content: doc.last_message?.content.text?.text,
+      type: doc.last_message?.content._,
+      unixtime: doc.last_message?.date,
+    };
 
-    // return {
-    //   id: doc.id,
-    //   title: doc.title,
-    //   lastMessage,
-    // };
+    return {
+      id: doc.id,
+      title: doc.title,
+      lastMessage,
+    };
   }
 
   async getMessagesByChatId(
@@ -77,43 +71,35 @@ export class ChatsService {
     fromMessageId: number,
     limit: number,
   ): Promise<MessageDto[]> | undefined {
-    return;
-    // const databasePath = path.join(
-    //   process.env.DATABASE_PATH,
-    //   'chats',
-    //   `${chatId}.db`,
-    // );
-    // const db = new Datastore({
-    //   filename: databasePath,
-    //   autoload: true,
-    // });
+    const filter = fromMessageId === 0 ? {} : { id: { $lt: fromMessageId } };
 
-    // const query = fromMessageId === 0 ? {} : { id: { $lt: fromMessageId } };
+    const collection = this.db.collection('messages');
+    const cursor = collection
+      .find({ chat_id: chatId, ...filter })
+      .project({
+        id: 1,
+        'sender_id.user_id': 1,
+        'content.text.text': 1,
+        date: 1,
+      })
+      .limit(limit)
+      .sort({ date: -1 });
 
-    // const docs = await db
-    //   .findAsync(query)
-    //   .projection({
-    //     id: 1,
-    //     'sender_id.user_id': 1,
-    //     'content.text.text': 1,
-    //     date: 1,
-    //   })
-    //   .limit(limit)
-    //   .sort({ date: -1 });
+    const docs = await cursor.toArray();
 
-    // const transformedDocs = docs
-    //   .map((doc) => {
-    //     const text = doc.content?.text?.text;
+    const transformedDocs = docs
+      .map((doc) => {
+        const text = doc.content?.text?.text;
 
-    //     return {
-    //       id: doc.id,
-    //       sender: doc.sender_id.user_id,
-    //       content: text,
-    //       unixtime: doc.date,
-    //     };
-    //   })
-    //   .reverse();
+        return {
+          id: doc.id,
+          sender: doc.sender_id.user_id,
+          content: text,
+          unixtime: doc.date,
+        };
+      })
+      .reverse();
 
-    // return transformedDocs;
+    return transformedDocs;
   }
 }

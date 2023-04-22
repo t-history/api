@@ -5,7 +5,9 @@ export class ChatDto {
   @ApiProperty()
   id: number;
   @ApiProperty()
-  title: string;
+  title?: string;
   @ApiProperty()
-  lastMessage: MessageDto;
+  lastMessage?: MessageDto;
+  @ApiProperty()
+  type?: string;
 }
