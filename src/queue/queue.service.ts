@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 
+import { QueueStateDTO } from './dto';
+
 @Injectable()
 export class QueueService {
   constructor(@InjectQueue('chatHistoryQueue') private queue: Queue) {}
@@ -14,7 +16,7 @@ export class QueueService {
   }
 
   async getQueueLength(): Promise<any> {
-    const queueLength = await this.queue.getJobCounts(
+    const queueLength: QueueStateDTO = await this.queue.getJobCounts(
       'wait',
       'completed',
       'failed',

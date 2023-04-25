@@ -5,9 +5,11 @@ import {
   Param,
   NotFoundException,
   ParseIntPipe,
+  Res,
 } from '@nestjs/common';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { QueueService } from './queue.service';
+import { Response } from 'express';
 
 @ApiTags('queue')
 @Controller('queue')
@@ -98,5 +100,35 @@ export class QueueController {
   })
   getQueueLength(): any {
     return this.queueService.getQueueLength();
+  }
+
+  @Get('sse')
+  async sse(@Res() res: Response) {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Content-Encoding', 'none');
+    res.flushHeaders();
+
+    const intervalId = setInterval(async () => {
+      const queueState = await this.queueService.getQueueLength();
+      const time = new Date().toISOString();
+      console.log(time, queueState);
+      res.write(`data: ${JSON.stringify(queueState)}\n\n`);
+    }, 1000);
+
+    // Maintain SSE connection for 59 seconds
+    // Client reestablishes if needed
+    const timeout = 59 * 1000;
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalId);
+      res.end();
+    }, timeout);
+
+    res.on('close', () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+      res.end();
+    });
   }
 }
