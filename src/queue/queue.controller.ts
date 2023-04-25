@@ -112,8 +112,8 @@ export class QueueController {
 
     const intervalId = setInterval(async () => {
       const queueState = await this.queueService.getQueueLength();
-      const time = new Date().toISOString();
-      console.log(time, queueState);
+      // const time = new Date().toISOString();
+      // console.log(time, queueState);
       res.write(`data: ${JSON.stringify(queueState)}\n\n`);
     }, 1000);
 
