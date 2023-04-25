@@ -1,18 +1,15 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { ChatDto } from './chat.dto';
 import { MessageDto } from './message.dto';
-import { Db, MongoClient } from 'mongodb';
+import { Db } from 'mongodb';
 
 @Injectable()
 export class ChatsService {
-  private db: Db;
-
-  constructor(@Inject('DATABASE_CONNECTION') private dbClient: MongoClient) {
-    this.db = this.dbClient.db('thistory');
-  }
+  constructor(@Inject('DATABASE_CONNECTION') private db: Db) {}
 
   async getChats(): Promise<ChatDto[]> {
     const collection = this.db.collection('chats');
+    console.log('getChats', collection);
 
     const cursor = collection
       .find({})
