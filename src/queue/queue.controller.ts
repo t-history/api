@@ -10,6 +10,7 @@ import {
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { QueueService } from './queue.service';
 import { Response } from 'express';
+import { QueueResponseDTO } from './dto';
 
 @ApiTags('queue')
 @Controller('queue')
@@ -36,7 +37,8 @@ export class QueueController {
   //   description: 'All chats have been added to the export queue',
   // })
   // addToQueueAll(@Body('depth') depth: 'full' | 'sync' | number): void {
-  //   this.queueService.addToQueue(null, depth);
+  //   const res await=  this.queueService.addToQueue(null, depth);
+  // return
   // }
 
   // With single chatId ----------------------------
@@ -51,8 +53,14 @@ export class QueueController {
     description: 'The specified chat has been added to the export queue',
   })
   @ApiResponse({ status: 404, description: 'Chat not found' })
-  addToQueueChatFull(@Param('chatId', ParseIntPipe) chatId: number): void {
-    this.queueService.addToQueue(chatId, 'full');
+  async addToQueueChatFull(
+    @Param('chatId', ParseIntPipe) chatId: number,
+  ): Promise<QueueResponseDTO> {
+    await this.queueService.addToQueue(chatId, 'full');
+
+    return {
+      message: 'The chat has been added to queue',
+    };
   }
 
   // load only new messages
@@ -66,8 +74,14 @@ export class QueueController {
     description: 'The specified chat has been added to the export queue',
   })
   @ApiResponse({ status: 404, description: 'Chat not found' })
-  addToQueueChatSync(@Param('chatId', ParseIntPipe) chatId: number): void {
-    this.queueService.addToQueue(chatId, 'sync');
+  async addToQueueChatSync(
+    @Param('chatId', ParseIntPipe) chatId: number,
+  ): Promise<QueueResponseDTO> {
+    await this.queueService.addToQueue(chatId, 'sync');
+
+    return {
+      message: 'The chat has been added to queue',
+    };
   }
 
   // load only messages from the depth in seconds
@@ -81,14 +95,18 @@ export class QueueController {
     description: 'The specified chat has been added to the export queue',
   })
   @ApiResponse({ status: 404, description: 'Chat not found' })
-  addToQueueChatDepth(
+  async addToQueueChatDepth(
     @Param('chatId', ParseIntPipe) chatId: number,
     @Param('depth', ParseIntPipe) depth: number,
-  ): void {
+  ): Promise<QueueResponseDTO> {
     if (depth < 0) {
       throw new NotFoundException('Chat not found');
     }
-    this.queueService.addToQueue(chatId, depth);
+    await this.queueService.addToQueue(chatId, depth);
+
+    return {
+      message: 'The chat has been added to queue',
+    };
   }
 
   @Get('length')
