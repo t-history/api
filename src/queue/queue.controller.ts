@@ -109,16 +109,16 @@ export class QueueController {
     };
   }
 
-  @Get('length')
-  @ApiOperation({ summary: 'Get queue length' })
-  @ApiResponse({
-    status: 200,
-    description: 'Queue length successfully obtained',
-    type: Number,
-  })
-  getQueueLength(): any {
-    return this.queueService.getQueueLength();
-  }
+  // @Get('length')
+  // @ApiOperation({ summary: 'Get queue length' })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Queue length successfully obtained',
+  //   type: Number,
+  // })
+  // getQueueLength(): any {
+  //   return this.queueService.getQueueLength();
+  // }
 
   @Get('sse')
   async sse(@Res() res: Response) {
@@ -130,8 +130,6 @@ export class QueueController {
 
     const intervalId = setInterval(async () => {
       const queueState = await this.queueService.getQueueLength();
-      // const time = new Date().toISOString();
-      // console.log(time, queueState);
       res.write(`data: ${JSON.stringify(queueState)}\n\n`);
     }, 1000);
 

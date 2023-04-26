@@ -7,31 +7,18 @@ import { Db } from 'mongodb';
 export class ChatsService {
   constructor(@Inject('DATABASE_CONNECTION') private db: Db) {}
 
+  private chatProjection = { id: 1, title: 1, last_message: 1, status: 1 };
+
   async getChats(): Promise<ChatDto[]> {
     const collection = this.db.collection('chats');
-    console.log('getChats', collection);
 
     const cursor = collection
       .find({})
-      .project({ id: 1, title: 1, last_message: 1 })
+      .project(this.chatProjection)
       .sort({ 'last_message.date': -1 });
     const docs = await cursor.toArray();
 
-    const transformedDocs = docs.map((doc) => {
-      const lastMessage = {
-        id: doc.last_message?.id,
-        sender: doc.last_message?.sender_id.user_id,
-        content: doc.last_message?.content.text?.text,
-        type: doc.last_message?.content._,
-        unixtime: doc.last_message?.date,
-      };
-
-      return {
-        id: doc.id,
-        title: doc.title,
-        lastMessage,
-      };
-    });
+    const transformedDocs = docs.map(this.transformChat);
 
     return transformedDocs;
   }
@@ -45,19 +32,9 @@ export class ChatsService {
       return;
     }
 
-    const lastMessage = {
-      id: doc.last_message.id,
-      sender: doc.last_message.sender_id?.user_id,
-      content: doc.last_message?.content.text?.text,
-      type: doc.last_message?.content._,
-      unixtime: doc.last_message?.date,
-    };
+    const transformedDoc = this.transformChat(doc);
 
-    return {
-      id: doc.id,
-      title: doc.title,
-      lastMessage,
-    };
+    return transformedDoc;
   }
 
   async getMessagesByChatId(
@@ -97,5 +74,22 @@ export class ChatsService {
       .reverse();
 
     return transformedDocs;
+  }
+
+  transformChat(doc: any): ChatDto {
+    const lastMessage = {
+      id: doc.last_message?.id,
+      sender: doc.last_message?.sender_id.user_id,
+      content: doc.last_message?.content.text?.text,
+      type: doc.last_message?.content._,
+      unixtime: doc.last_message?.date,
+    };
+
+    return {
+      id: doc.id,
+      title: doc.title,
+      status: doc.status,
+      lastMessage,
+    };
   }
 }

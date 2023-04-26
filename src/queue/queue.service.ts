@@ -37,11 +37,26 @@ export class QueueService {
   }
 
   async getQueueLength(): Promise<any> {
+    // find no equal to idle
+    const chatsStatus = await this.db
+      .collection('chats')
+      .find({ status: { $ne: 'idle' }, 'type._': 'chatTypePrivate' })
+      .project({ id: 1, status: 1 })
+      .toArray();
+
+    const chatsStatusMap = chatsStatus.reduce((acc, chat) => {
+      acc[chat.id] = chat.status;
+      return acc;
+    }, {});
+
     const queueLength: QueueStateDTO = await this.queue.getJobCounts(
       'wait',
       'completed',
       'failed',
     );
-    return queueLength;
+    return {
+      chatsStatus: chatsStatusMap,
+      ...queueLength,
+    };
   }
 }
