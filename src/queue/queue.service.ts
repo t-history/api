@@ -32,7 +32,7 @@ export class QueueService {
 
     await this.db
       .collection('chats')
-      .updateOne({ id: chatId }, { $set: { status: 'wait' } });
+      .updateOne({ id: chatId }, { $set: { status: 'queued' } });
     await this.queue.add('getChat', { chatId, depth });
   }
 
