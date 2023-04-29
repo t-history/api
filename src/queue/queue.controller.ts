@@ -19,27 +19,24 @@ export class QueueController {
 
   // With all chats --------------------------------
 
-  // @Post('all')
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       depth: {
-  //         type: 'string',
-  //         enum: ['day', 'week', 'all'],
-  //       },
-  //     },
-  //   },
-  // })
-  // @ApiOperation({ summary: 'Add all chats to the export queue' })
-  // @ApiResponse({
-  //   status: 201,
-  //   description: 'All chats have been added to the export queue',
-  // })
-  // addToQueueAll(@Body('depth') depth: 'full' | 'sync' | number): void {
-  //   const res await=  this.queueService.addToQueue(null, depth);
-  // return
-  // }
+  // sync all chat
+  @Post('sync')
+  @ApiOperation({
+    summary:
+      'Add a task to queue for update chatlist and sync all chats with the latest updates',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'The specified chat has been added to the export queue',
+  })
+  @ApiResponse({ status: 404, description: 'Chat not found' })
+  async addToQueueAllSync(): Promise<QueueResponseDTO> {
+    await this.queueService.addToQueueUpdateAll();
+
+    return {
+      message: 'Task for sync all chats has been added to queue',
+    };
+  }
 
   // With single chatId ----------------------------
 
@@ -56,7 +53,7 @@ export class QueueController {
   async addToQueueChatFull(
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<QueueResponseDTO> {
-    await this.queueService.addToQueue(chatId, 'full');
+    await this.queueService.addToQueueChat(chatId, 'full');
 
     return {
       message: 'The chat has been added to queue',
@@ -77,7 +74,7 @@ export class QueueController {
   async addToQueueChatSync(
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<QueueResponseDTO> {
-    await this.queueService.addToQueue(chatId, 'sync');
+    await this.queueService.addToQueueChat(chatId, 'sync');
 
     return {
       message: 'The chat has been added to queue',
@@ -102,7 +99,7 @@ export class QueueController {
     if (depth < 0) {
       throw new NotFoundException('Chat not found');
     }
-    await this.queueService.addToQueue(chatId, depth);
+    await this.queueService.addToQueueChat(chatId, depth);
 
     return {
       message: 'The chat has been added to queue',
@@ -131,7 +128,7 @@ export class QueueController {
     const intervalId = setInterval(async () => {
       const queueState = await this.queueService.getQueueLength();
       res.write(`data: ${JSON.stringify(queueState)}\n\n`);
-    }, 1000);
+    }, 2000);
 
     // Maintain SSE connection for 59 seconds
     // Client reestablishes if needed

@@ -13,11 +13,11 @@ import { QueueStateDTO } from './dto';
 @Injectable()
 export class QueueService {
   constructor(
-    @InjectQueue('chatHistoryQueue') private queue: Queue,
+    @InjectQueue('chatQueue') private chatQueue: Queue,
     @Inject('DATABASE_CONNECTION') private db: Db,
   ) {}
 
-  async addToQueue(
+  async addToQueueChat(
     chatId: number | null,
     depth: 'full' | 'sync' | number,
   ): Promise<void> {
@@ -33,7 +33,11 @@ export class QueueService {
     await this.db
       .collection('chats')
       .updateOne({ id: chatId }, { $set: { status: 'queued' } });
-    await this.queue.add('getChat', { chatId, depth });
+    await this.chatQueue.add('getChat', { chatId, depth });
+  }
+
+  async addToQueueUpdateAll(): Promise<void> {
+    await this.chatQueue.add('getChatList', {});
   }
 
   async getQueueLength(): Promise<any> {
@@ -49,7 +53,7 @@ export class QueueService {
       return acc;
     }, {});
 
-    const queueLength: QueueStateDTO = await this.queue.getJobCounts(
+    const queueLength: QueueStateDTO = await this.chatQueue.getJobCounts(
       'wait',
       'completed',
       'failed',
