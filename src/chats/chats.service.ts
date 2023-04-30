@@ -7,7 +7,13 @@ import { Db } from 'mongodb';
 export class ChatsService {
   constructor(@Inject('DATABASE_CONNECTION') private db: Db) {}
 
-  private chatProjection = { id: 1, title: 1, last_message: 1, status: 1 };
+  private chatProjection = {
+    id: 1,
+    title: 1,
+    last_message: 1,
+    status: 1,
+    'type._': 1,
+  };
 
   async getChats(): Promise<ChatDto[]> {
     const collection = this.db.collection('chats');
@@ -23,18 +29,23 @@ export class ChatsService {
     return transformedDocs;
   }
 
-  async getChatById(chatId: number): Promise<ChatDto> | undefined {
-    const collection = this.db.collection('chats');
+  async getTransformedChatById(chatId: number): Promise<ChatDto> | undefined {
+    const chat = this.getChatById(chatId);
 
-    const doc = await collection.findOne({ id: chatId });
-
-    if (!doc) {
+    if (!chat) {
       return;
     }
 
-    const transformedDoc = this.transformChat(doc);
+    const transformedDoc = this.transformChat(chat);
 
     return transformedDoc;
+  }
+
+  async getChatById(chatId: number): Promise<any> | undefined {
+    const collection = this.db.collection('chats');
+    const doc = await collection.findOne({ id: chatId });
+
+    return doc;
   }
 
   async getMessagesByChatId(
@@ -42,6 +53,13 @@ export class ChatsService {
     fromMessageId: number,
     limit: number,
   ): Promise<MessageDto[]> | undefined {
+    const chat = await this.getChatById(chatId);
+    const chatTypeIsPrivate = ChatsService.isPrivateChat(chat);
+
+    if (!chatTypeIsPrivate) {
+      return [];
+    }
+
     const filter = fromMessageId === 0 ? {} : { id: { $lt: fromMessageId } };
 
     const collection = this.db.collection('messages');
@@ -75,21 +93,28 @@ export class ChatsService {
 
     return transformedDocs;
   }
+  private transformChat(chat: any): ChatDto {
+    const chatTypeIsPrivate = ChatsService.isPrivateChat(chat);
 
-  transformChat(doc: any): ChatDto {
     const lastMessage = {
-      id: doc.last_message?.id,
-      sender: doc.last_message?.sender_id.user_id,
-      content: doc.last_message?.content.text?.text,
-      type: doc.last_message?.content._,
-      unixtime: doc.last_message?.date,
+      id: chat.last_message?.id,
+      sender: chat.last_message?.sender_id.user_id,
+      content: chatTypeIsPrivate ? chat.last_message?.content.text?.text : '',
+      type: chatTypeIsPrivate ? chat.last_message?.content._ : '',
+      unixtime: chat.last_message?.date,
     };
 
     return {
-      id: doc.id,
-      title: doc.title,
-      status: doc.status,
+      id: chat.id,
+      title: chat.title,
+      status: chat.status,
+      type: chat.type._,
       lastMessage,
+      isSynchronizable: chatTypeIsPrivate,
     };
+  }
+
+  static isPrivateChat(chat: any): boolean {
+    return chat?.type._ === 'chatTypePrivate';
   }
 }

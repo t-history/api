@@ -10,4 +10,8 @@ export class ChatDto {
   lastMessage?: MessageDto;
   @ApiProperty()
   status: 'queued' | 'in_progress' | 'idle';
+  @ApiProperty()
+  type: string;
+  @ApiProperty()
+  isSynchronizable: boolean;
 }

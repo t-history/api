@@ -45,7 +45,7 @@ export class ChatsController {
   async getChatById(
     @Param('chatId', ParseIntPipe) chatId: number,
   ): Promise<ChatDto> | undefined {
-    return await this.chatsService.getChatById(chatId);
+    return await this.chatsService.getTransformedChatById(chatId);
   }
 
   @Get(':chatId/messages')
