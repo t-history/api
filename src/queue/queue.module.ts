@@ -35,6 +35,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     BullModule.registerQueue({
       name: 'chatHistoryQueue',
     }),
+    BullModule.registerQueue({
+      name: 'chatQueue',
+    }),
   ],
   controllers: [QueueController],
   providers: [QueueService],

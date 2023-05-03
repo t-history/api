@@ -7,57 +7,45 @@ import { Db } from 'mongodb';
 export class ChatsService {
   constructor(@Inject('DATABASE_CONNECTION') private db: Db) {}
 
+  private chatProjection = {
+    id: 1,
+    title: 1,
+    last_message: 1,
+    status: 1,
+    'type._': 1,
+  };
+
   async getChats(): Promise<ChatDto[]> {
     const collection = this.db.collection('chats');
-    console.log('getChats', collection);
 
     const cursor = collection
       .find({})
-      .project({ id: 1, title: 1, last_message: 1 })
+      .project(this.chatProjection)
       .sort({ 'last_message.date': -1 });
     const docs = await cursor.toArray();
 
-    const transformedDocs = docs.map((doc) => {
-      const lastMessage = {
-        id: doc.last_message?.id,
-        sender: doc.last_message?.sender_id.user_id,
-        content: doc.last_message?.content.text?.text,
-        type: doc.last_message?.content._,
-        unixtime: doc.last_message?.date,
-      };
-
-      return {
-        id: doc.id,
-        title: doc.title,
-        lastMessage,
-      };
-    });
+    const transformedDocs = docs.map(this.transformChat);
 
     return transformedDocs;
   }
 
-  async getChatById(chatId: number): Promise<ChatDto> | undefined {
-    const collection = this.db.collection('chats');
+  async getTransformedChatById(chatId: number): Promise<ChatDto> | undefined {
+    const chat = this.getChatById(chatId);
 
-    const doc = await collection.findOne({ id: chatId });
-
-    if (!doc) {
+    if (!chat) {
       return;
     }
 
-    const lastMessage = {
-      id: doc.last_message.id,
-      sender: doc.last_message.sender_id?.user_id,
-      content: doc.last_message?.content.text?.text,
-      type: doc.last_message?.content._,
-      unixtime: doc.last_message?.date,
-    };
+    const transformedDoc = this.transformChat(chat);
 
-    return {
-      id: doc.id,
-      title: doc.title,
-      lastMessage,
-    };
+    return transformedDoc;
+  }
+
+  async getChatById(chatId: number): Promise<any> | undefined {
+    const collection = this.db.collection('chats');
+    const doc = await collection.findOne({ id: chatId });
+
+    return doc;
   }
 
   async getMessagesByChatId(
@@ -65,6 +53,13 @@ export class ChatsService {
     fromMessageId: number,
     limit: number,
   ): Promise<MessageDto[]> | undefined {
+    const chat = await this.getChatById(chatId);
+    const chatTypeIsPrivate = ChatsService.isPrivateChat(chat);
+
+    if (!chatTypeIsPrivate) {
+      return [];
+    }
+
     const filter = fromMessageId === 0 ? {} : { id: { $lt: fromMessageId } };
 
     const collection = this.db.collection('messages');
@@ -97,5 +92,29 @@ export class ChatsService {
       .reverse();
 
     return transformedDocs;
+  }
+  private transformChat(chat: any): ChatDto {
+    const chatTypeIsPrivate = ChatsService.isPrivateChat(chat);
+
+    const lastMessage = {
+      id: chat.last_message?.id,
+      sender: chat.last_message?.sender_id.user_id,
+      content: chatTypeIsPrivate ? chat.last_message?.content.text?.text : '',
+      type: chatTypeIsPrivate ? chat.last_message?.content._ : '',
+      unixtime: chat.last_message?.date,
+    };
+
+    return {
+      id: chat.id,
+      title: chat.title,
+      status: chat.status,
+      type: chat.type._,
+      lastMessage,
+      isSynchronizable: chatTypeIsPrivate,
+    };
+  }
+
+  static isPrivateChat(chat: any): boolean {
+    return chat?.type._ === 'chatTypePrivate';
   }
 }

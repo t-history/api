@@ -13,11 +13,11 @@ import { QueueStateDTO } from './dto';
 @Injectable()
 export class QueueService {
   constructor(
-    @InjectQueue('chatHistoryQueue') private queue: Queue,
+    @InjectQueue('chatQueue') private chatQueue: Queue,
     @Inject('DATABASE_CONNECTION') private db: Db,
   ) {}
 
-  async addToQueue(
+  async addToQueueChat(
     chatId: number | null,
     depth: 'full' | 'sync' | number,
   ): Promise<void> {
@@ -32,16 +32,35 @@ export class QueueService {
 
     await this.db
       .collection('chats')
-      .updateOne({ id: chatId }, { $set: { status: 'wait' } });
-    await this.queue.add('getChat', { chatId, depth });
+      .updateOne({ id: chatId }, { $set: { status: 'queued' } });
+    await this.chatQueue.add('getChat', { chatId, depth });
+  }
+
+  async addToQueueUpdateAll(): Promise<void> {
+    await this.chatQueue.add('getChatList', {});
   }
 
   async getQueueLength(): Promise<any> {
-    const queueLength: QueueStateDTO = await this.queue.getJobCounts(
+    // find no equal to idle
+    const chatsStatus = await this.db
+      .collection('chats')
+      .find({ status: { $ne: 'idle' }, 'type._': 'chatTypePrivate' })
+      .project({ id: 1, status: 1 })
+      .toArray();
+
+    const chatsStatusMap = chatsStatus.reduce((acc, chat) => {
+      acc[chat.id] = chat.status;
+      return acc;
+    }, {});
+
+    const queueLength: QueueStateDTO = await this.chatQueue.getJobCounts(
       'wait',
       'completed',
       'failed',
     );
-    return queueLength;
+    return {
+      chatsStatus: chatsStatusMap,
+      ...queueLength,
+    };
   }
 }
