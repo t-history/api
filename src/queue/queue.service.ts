@@ -48,19 +48,45 @@ export class QueueService {
       .project({ id: 1, status: 1 })
       .toArray();
 
+    const chatsCount = await this.db.collection('chats').countDocuments({});
+    const chatsCountByStatus = await this.db
+      .collection('chats')
+      .aggregate([
+        {
+          $group: {
+            _id: '$status',
+            count: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray();
+
     const chatsStatusMap = chatsStatus.reduce((acc, chat) => {
       acc[chat.id] = chat.status;
       return acc;
     }, {});
 
-    const queueLength: QueueStateDTO = await this.chatQueue.getJobCounts(
-      'wait',
-      'completed',
-      'failed',
+    const queueFailedLength = await this.chatQueue.getJobCounts('failed');
+
+    const repeatableJobs = await this.chatQueue.getRepeatableJobs();
+    const getChatListJob = repeatableJobs.find(
+      (job) => job.name === 'getChatList',
     );
+
     return {
       chatsStatus: chatsStatusMap,
-      ...queueLength,
+      idle:
+        chatsCountByStatus.find((status) => status._id === 'idle')?.count || 0,
+      queued:
+        chatsCountByStatus.find((status) => status._id === 'queued')?.count ||
+        0,
+      in_progress:
+        chatsCountByStatus.find((status) => status._id === 'in_progress')
+          ?.count || 0,
+      failed: queueFailedLength.failed,
+      chatsCount,
+      nextChatListJob: getChatListJob?.next,
+      periodChatListJob: Number(getChatListJob?.pattern),
     };
   }
 }

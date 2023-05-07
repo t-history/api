@@ -1,12 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ChatStatus } from '../chats/chat.dto';
 
-export class QueueStateDTO {
-  wait?: number;
-  completed?: number;
-  failed?: number;
-}
 
 export class QueueResponseDTO {
   @ApiProperty({ example: 'Chat added to queue' })
   message: string;
+}
+
+export class QueueStateDTO {
+  queued: number;
+  in_progress?: number;
+  completed?: number;
+  failed?: number;
+  chatsStatus: {
+    [key: number]: ChatStatus;
+  };
+  chatsCount: number;
+  nextChatListJob: number | null;
+  periodChatListJob: number | null;
 }

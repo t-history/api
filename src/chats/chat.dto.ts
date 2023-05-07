@@ -1,6 +1,8 @@
 import { MessageDto } from './message.dto';
 import { ApiProperty } from '@nestjs/swagger';
 
+export type ChatStatus = 'queued' | 'in_progress' | 'idle';
+
 export class ChatDto {
   @ApiProperty()
   id: number;
@@ -9,7 +11,7 @@ export class ChatDto {
   @ApiProperty()
   lastMessage?: MessageDto;
   @ApiProperty()
-  status: 'queued' | 'in_progress' | 'idle';
+  status: ChatStatus;
   @ApiProperty()
   type: string;
   @ApiProperty()
