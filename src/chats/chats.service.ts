@@ -11,7 +11,7 @@ export class ChatsService {
     id: 1,
     title: 1,
     last_message: 1,
-    status: 1,
+    th_status: 1,
     'type._': 1,
   };
 
@@ -107,7 +107,7 @@ export class ChatsService {
     return {
       id: chat.id,
       title: chat.title,
-      status: chat.status,
+      status: chat.th_status,
       type: chat.type._,
       lastMessage,
       isSynchronizable: chatTypeIsPrivate,
