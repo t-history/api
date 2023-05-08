@@ -71,6 +71,7 @@ export class ChatsService {
         'content.text.text': 1,
         'content._': 1,
         date: 1,
+        th_removed: 1,
       })
       .limit(limit)
       .sort({ date: -1 });
@@ -87,6 +88,7 @@ export class ChatsService {
           content: text,
           type: doc.content._,
           unixtime: doc.date,
+          removed: doc.th_removed,
         };
       })
       .reverse();
