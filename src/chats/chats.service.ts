@@ -11,7 +11,7 @@ export class ChatsService {
     id: 1,
     title: 1,
     last_message: 1,
-    status: 1,
+    th_status: 1,
     'type._': 1,
   };
 
@@ -71,6 +71,7 @@ export class ChatsService {
         'content.text.text': 1,
         'content._': 1,
         date: 1,
+        th_removed: 1,
       })
       .limit(limit)
       .sort({ date: -1 });
@@ -87,6 +88,7 @@ export class ChatsService {
           content: text,
           type: doc.content._,
           unixtime: doc.date,
+          removed: doc.th_removed,
         };
       })
       .reverse();
@@ -107,7 +109,7 @@ export class ChatsService {
     return {
       id: chat.id,
       title: chat.title,
-      status: chat.status,
+      status: chat.th_status,
       type: chat.type._,
       lastMessage,
       isSynchronizable: chatTypeIsPrivate,

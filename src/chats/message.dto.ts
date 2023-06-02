@@ -15,4 +15,7 @@ export class MessageDto {
 
   @ApiProperty()
   unixtime: number;
+
+  @ApiProperty()
+  removed?: boolean;
 }
