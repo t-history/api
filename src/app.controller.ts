@@ -20,10 +20,10 @@ export class AppController {
     return 'Backup successfully uploaded to S3';
   }
 
-  // @Get('/restore')
-  // async createRestore(): Promise<string> {
-  //   console.log('restore');
-  //   await this.backupService.restore();
-  //   return 'Restore successfully downloaded from S3';
-  // }
+  @Get('/restore')
+  async createRestore(): Promise<string> {
+    console.log('restore');
+    await this.backupService.restore();
+    return 'Restore successfully downloaded from S3';
+  }
 }
