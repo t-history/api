@@ -3,6 +3,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  CreateBucketCommand,
 } from '@aws-sdk/client-s3';
 import { Readable } from 'stream';
 
@@ -28,6 +29,13 @@ export class S3Service {
       Key: key,
       Body: buffer,
     };
+
+    // create bucket if not exists
+    try {
+      await this.s3Client.send(new CreateBucketCommand({ Bucket: bucket }));
+    } catch (err) {
+      console.log(`Bucket ${bucket} already exists`);
+    }
 
     await this.s3Client.send(new PutObjectCommand(params));
     console.log(`File uploaded successfully at ${key}`);
