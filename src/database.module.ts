@@ -7,7 +7,7 @@ const mongoProvider: Provider = {
     const client = await MongoClient.connect(
       process.env.MONGO_CONNECTION_STRING,
     );
-    return client.db('thistory');
+    return client.db(process.env.MONGO_DB_NAME);
   },
 };
 
