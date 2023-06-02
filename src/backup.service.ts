@@ -32,14 +32,15 @@ export class BackupService {
 
     const command = `mongodump`;
     const args = [`--uri="${mongoUri}"`, `--db`, dbName, `--gzip`, `--archive`];
-
     const mongodump = spawn(command, args);
-    const writeStream = createWriteStream(OUTPUT_FILE_PATH);
 
     const key = pbkdf2Sync(PASSWORD, SALT, ITERATIONS, KEY_LENGTH, 'sha256');
     const cipher = createCipheriv(ALGORITHM, key, IV);
 
-    console.log('Encrypting dump...', key);
+    const writeStream = createWriteStream(OUTPUT_FILE_PATH);
+    writeStream.on('error', (err) => {
+      console.error('Failed to write header for encrypted dump:', err);
+    });
 
     writeStream.write(SALT);
     writeStream.write(IV);
